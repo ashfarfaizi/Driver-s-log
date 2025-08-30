@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Clock, Truck, AlertTriangle, CheckCircle, Navigation, Map, FileText, Timer, MapIcon, TrendingUp } from 'lucide-react';
+import TripMap from './TripMap';
 
 const ELDTripPlanner = () => {
   const [formData, setFormData] = useState({
@@ -45,7 +46,138 @@ const ELDTripPlanner = () => {
       setActiveTab('results');
     } catch (error) {
       console.log('Backend not available, using mock data for demonstration');
-      // Fallback to mock data if API fails
+      
+      // Generate dynamic coordinates based on entered locations
+      const generateCoordinates = (location) => {
+        const cityCoords = {
+          'new york': [40.7128, -74.0060], 'chicago': [41.8781, -87.6298],
+          'los angeles': [34.0522, -118.2437], 'seattle': [47.6062, -122.3321],
+          'miami': [25.7617, -80.1918], 'denver': [39.7392, -104.9903],
+          'atlanta': [33.7490, -84.3880], 'dallas': [32.7767, -96.7970],
+          'houston': [29.7604, -95.3698], 'phoenix': [33.4484, -112.0740],
+          'philadelphia': [39.9526, -75.1652], 'san antonio': [29.4241, -98.4936],
+          'san diego': [32.7157, -117.1611], 'san jose': [37.3382, -121.8863],
+          'austin': [30.2672, -97.7431], 'jacksonville': [30.3322, -81.6557],
+          'fort worth': [32.7555, -97.3308], 'columbus': [39.9612, -82.9988],
+          'charlotte': [35.2271, -80.8431], 'san francisco': [37.7749, -122.4194],
+          'indianapolis': [39.7684, -86.1581], 'washington': [38.9072, -77.0369],
+          'boston': [42.3601, -71.0589], 'el paso': [31.7619, -106.4850],
+          'nashville': [36.1627, -86.7816], 'detroit': [42.3314, -83.0458],
+          'oklahoma city': [35.4676, -97.5164], 'portland': [45.5152, -122.6784],
+          'las vegas': [36.1699, -115.1398], 'memphis': [35.1495, -90.0490],
+          'louisville': [38.2527, -85.7585], 'baltimore': [39.2904, -76.6122],
+          'milwaukee': [43.0389, -87.9065], 'albuquerque': [35.0844, -106.6504],
+          'tucson': [32.2226, -110.9747], 'fresno': [36.7378, -119.7871],
+          'sacramento': [38.5816, -121.4944], 'mesa': [33.4152, -111.8315],
+          'kansas city': [39.0997, -94.5786], 'tampa': [27.9506, -82.4572],
+          'orlando': [28.5383, -81.3792], 'minneapolis': [44.9778, -93.2650],
+          'cleveland': [41.4993, -81.6944], 'cincinnati': [39.1031, -84.5120],
+          'pittsburgh': [40.4406, -79.9959], 'st louis': [38.6270, -90.1994],
+          'oakland': [37.8044, -122.2711], 'raleigh': [35.7796, -78.6382],
+          'arlington': [32.7357, -97.1081], 'new orleans': [29.9511, -90.0715],
+          'wichita': [37.6872, -97.3301], 'tulsa': [36.1540, -95.9928],
+          'aurora': [39.7294, -104.8319], 'bakersfield': [35.3733, -119.0187],
+          'anaheim': [33.8366, -117.9143], 'honolulu': [21.3099, -157.8581],
+          'santa ana': [33.7455, -117.8677], 'corpus christi': [27.8006, -97.3964],
+          'riverside': [33.9533, -117.3962], 'lexington': [38.0406, -84.5037],
+          'stockton': [37.9577, -121.2908], 'henderson': [36.0395, -114.9817],
+          'saint paul': [44.9537, -93.0900], 'st petersburg': [27.7731, -82.6400],
+          'chula vista': [32.6401, -117.0842], 'irvine': [33.6846, -117.8265],
+          'fort wayne': [41.0793, -85.1394], 'jersey city': [40.7178, -74.0431],
+          'durham': [35.9940, -78.8986], 'laredo': [27.5064, -99.5075],
+          'buffalo': [42.8864, -78.8784], 'madison': [43.0731, -89.4012],
+          'lubbock': [33.5779, -101.8552], 'chandler': [33.3062, -111.8413],
+          'scottsdale': [33.4942, -111.9261], 'glendale': [33.5387, -112.1860],
+          'reno': [39.5296, -119.8138], 'norfolk': [36.8508, -76.2859],
+          'winston salem': [36.0999, -80.2442], 'north las vegas': [36.1989, -115.1175],
+          'gilbert': [33.3528, -111.7890], 'chesapeake': [36.7682, -76.2875],
+          'garland': [32.9126, -96.6389], 'irving': [32.8140, -96.9489],
+          'hialeah': [25.8576, -80.2781], 'fremont': [37.5485, -121.9886],
+          'boise': [43.6150, -116.2023], 'richmond': [37.5407, -77.4360],
+          'baton rouge': [30.4515, -91.1871], 'spokane': [47.6588, -117.4260],
+          'des moines': [41.5868, -93.6250], 'tacoma': [47.2529, -122.4443],
+          'san bernardino': [34.1083, -117.2898], 'modesto': [37.6391, -120.9969],
+          'fayetteville': [35.0527, -78.8784], 'shreveport': [32.5252, -93.7502],
+          'fontana': [34.0922, -117.4350], 'frisco': [33.1507, -96.8236],
+          'newark': [40.7357, -74.1724], 'plano': [33.0198, -96.6989],
+          'lincoln': [40.8136, -96.7026], 'greensboro': [36.0726, -79.7920],
+          'anchorage': [61.2181, -149.9003], 'salt lake city': [40.7608, -111.8910],
+          'toledo': [41.6528, -83.5379], 'toronto': [43.6532, -79.3832],
+          'vancouver': [49.2827, -123.1207], 'montreal': [45.5017, -73.5673],
+          'calgary': [51.0447, -114.0719], 'edmonton': [53.5461, -113.4938],
+          'ottawa': [45.4215, -75.6972], 'winnipeg': [49.8951, -97.1384],
+          'quebec city': [46.8139, -71.2080], 'hamilton': [43.2557, -79.8711],
+          'kitchener': [43.4516, -80.4925], 'london': [42.9849, -81.2453],
+          'victoria': [48.4284, -123.3656], 'halifax': [44.6488, -63.5752],
+          'saskatoon': [52.1332, -106.6700], 'regina': [50.4452, -104.6189],
+          'st johns': [47.5615, -52.7126], 'fredericton': [45.9636, -66.6431],
+          'charlottetown': [46.2382, -63.1311], 'whitehorse': [60.7212, -135.0568],
+          'yellowknife': [62.4540, -114.3718], 'iqaluit': [63.7467, -68.5170]
+        };
+        
+        const locationLower = location.toLowerCase();
+        
+        // Try exact match first
+        if (cityCoords[locationLower]) {
+          return cityCoords[locationLower];
+        }
+        
+        // Try partial match
+        for (const [city, coords] of Object.entries(cityCoords)) {
+          if (locationLower.includes(city) || city.includes(locationLower)) {
+            return coords;
+          }
+        }
+        
+        // Generate random coordinates within continental US if no match
+        const lat = Math.random() * (49.0 - 25.0) + 25.0;
+        const lon = Math.random() * (-66.0 - (-125.0)) + (-125.0);
+        return [lat, lon];
+      };
+      
+      // Generate coordinates for all locations
+      const currentCoords = generateCoordinates(formData.current_location);
+      const pickupCoords = generateCoordinates(formData.pickup_location);
+      const dropoffCoords = generateCoordinates(formData.dropoff_location);
+      
+      // Calculate distances using Haversine formula
+      const calculateDistance = (coord1, coord2) => {
+        const R = 3956; // Earth's radius in miles
+        const dLat = (coord2[0] - coord1[0]) * Math.PI / 180;
+        const dLon = (coord2[1] - coord1[1]) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(coord1[0] * Math.PI / 180) * Math.cos(coord2[0] * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+      };
+      
+      const leg1Distance = Math.round(calculateDistance(currentCoords, pickupCoords));
+      const leg2Distance = Math.round(calculateDistance(pickupCoords, dropoffCoords));
+      const totalDistance = leg1Distance + leg2Distance;
+      const totalDrivingTime = Math.round((totalDistance / 60) * 10) / 10;
+      const fuelStops = Math.ceil(totalDistance / 800);
+      const daysNeeded = Math.ceil(totalDrivingTime / 11);
+      
+      // Generate rest stops based on HOS regulations
+      const restStops = [];
+      if (totalDrivingTime > 8) {
+        restStops.push({
+          type: '30_minute_break',
+          duration: 0.5,
+          reason: 'Required 30-minute break after 8 hours driving'
+        });
+      }
+      
+      for (let day = 1; day < daysNeeded; day++) {
+        restStops.push({
+          type: '10_hour_break',
+          duration: 10,
+          reason: `Required 10-hour break - Day ${day + 1} driving limit exceeded`
+        });
+      }
+      
+      // Create dynamic mock response with calculated data
       const mockResponse = {
         trip_id: 1,
         route: {
@@ -53,70 +185,83 @@ const ELDTripPlanner = () => {
             {
               from: formData.current_location,
               to: formData.pickup_location,
-              distance_miles: 150,
-              duration_hours: 2.5,
-              coordinates: [[40.7128, -74.0060], [41.8781, -87.6298]]
+              distance_miles: leg1Distance,
+              duration_hours: Math.round((leg1Distance / 60) * 10) / 10,
+              coordinates: [currentCoords, pickupCoords]
             },
             {
               from: formData.pickup_location,
               to: formData.dropoff_location,
-              distance_miles: 800,
-              duration_hours: 13.3,
-              coordinates: [[41.8781, -87.6298], [34.0522, -118.2437]]
+              distance_miles: leg2Distance,
+              duration_hours: Math.round((leg2Distance / 60) * 10) / 10,
+              coordinates: [pickupCoords, dropoffCoords]
             }
           ],
-          total_distance: 950,
-          total_driving_time: 15.8,
-          fuel_stops: 1,
-          required_rest_stops: [
-            { type: '30_minute_break', duration: 0.5, reason: 'Required 30-minute break after 8 hours driving' },
-            { type: '10_hour_break', duration: 10, reason: 'Required 10-hour break - daily driving limit exceeded' }
-          ],
-          all_coordinates: [[40.7128, -74.0060], [41.8781, -87.6298], [34.0522, -118.2437]]
+          total_distance: totalDistance,
+          total_driving_time: totalDrivingTime,
+          fuel_stops: fuelStops,
+          required_rest_stops: restStops,
+          all_coordinates: [currentCoords, pickupCoords, dropoffCoords]
         },
-        eld_logs: [
-          {
-            id: 1,
-            date: '2024-03-15',
-            total_miles: 475,
-            driving_hours: 11,
-            on_duty_hours: 4,
-            off_duty_hours: 1,
-            sleeper_berth_hours: 8,
-            time_slots: generateMockTimeSlots(11, 4),
-            remarks: [
-              { time: '06:00', location: formData.current_location, status: 'on_duty', activity: 'Pre-trip inspection' },
-              { time: '06:30', location: formData.current_location, status: 'driving', activity: 'Driving to pickup' },
-              { time: '09:00', location: formData.pickup_location, status: 'on_duty', activity: 'Pickup' },
-              { time: '10:00', location: formData.pickup_location, status: 'driving', activity: 'Driving to delivery' },
-              { time: '14:00', location: 'Highway Rest Stop', status: 'off_duty', activity: '30-min break' },
-              { time: '14:30', location: 'Highway Rest Stop', status: 'driving', activity: 'Continue driving' },
-              { time: '17:30', location: 'Truck Stop', status: 'sleeper', activity: '10-hour break' }
-            ]
-          },
-          {
-            id: 2,
-            date: '2024-03-16',
-            total_miles: 475,
-            driving_hours: 4.8,
-            on_duty_hours: 2,
-            off_duty_hours: 1.2,
-            sleeper_berth_hours: 16,
-            time_slots: generateMockTimeSlots(4.8, 2),
-            remarks: [
-              { time: '03:30', location: 'Truck Stop', status: 'on_duty', activity: 'Pre-trip inspection' },
-              { time: '04:00', location: 'Truck Stop', status: 'driving', activity: 'Final leg to delivery' },
-              { time: '08:45', location: formData.dropoff_location, status: 'on_duty', activity: 'Delivery' },
-              { time: '09:45', location: formData.dropoff_location, status: 'off_duty', activity: 'Trip complete' }
-            ]
+        eld_logs: (() => {
+          const logs = [];
+          const dailyMiles = Math.ceil(totalDistance / daysNeeded);
+          const dailyDrivingHours = Math.min(11, totalDrivingTime / daysNeeded);
+          
+          for (let day = 1; day <= daysNeeded; day++) {
+            const isFirstDay = day === 1;
+            const isLastDay = day === daysNeeded;
+            const currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() + day - 1);
+            
+            const remarks = [];
+            if (isFirstDay) {
+              remarks.push(
+                { time: '06:00', location: formData.current_location, status: 'on_duty', activity: 'Pre-trip inspection' },
+                { time: '06:30', location: formData.current_location, status: 'driving', activity: 'Driving to pickup' }
+              );
+            } else {
+              remarks.push(
+                { time: '03:30', location: 'Truck Stop', status: 'on_duty', activity: 'Pre-trip inspection' },
+                { time: '04:00', location: 'Truck Stop', status: 'driving', activity: 'Continue trip' }
+              );
+            }
+            
+            if (day === Math.ceil(leg1Distance / dailyMiles)) {
+              remarks.push(
+                { time: '12:00', location: formData.pickup_location, status: 'on_duty', activity: 'Pickup' },
+                { time: '13:00', location: formData.pickup_location, status: 'driving', activity: 'Driving to delivery' }
+              );
+            }
+            
+            if (isLastDay) {
+              remarks.push(
+                { time: '11:30', location: formData.dropoff_location, status: 'on_duty', activity: 'Delivery' },
+                { time: '12:30', location: formData.dropoff_location, status: 'off_duty', activity: 'Trip complete' }
+              );
+            }
+            
+            logs.push({
+              id: day,
+              date: currentDate.toISOString().split('T')[0],
+              total_miles: dailyMiles,
+              driving_hours: dailyDrivingHours,
+              on_duty_hours: 4,
+              off_duty_hours: 1,
+              sleeper_berth_hours: 8,
+              time_slots: generateMockTimeSlots(dailyDrivingHours, 4),
+              remarks: remarks
+            });
           }
-        ],
+          
+          return logs;
+        })(),
         compliance_summary: {
-          total_driving_hours: 15.8,
-          total_on_duty_hours: 21.8,
-          projected_cycle_hours: parseFloat(formData.current_cycle_hours) + 21.8,
+          total_driving_hours: totalDrivingTime,
+          total_on_duty_hours: totalDrivingTime + (daysNeeded * 4), // 4 hours on-duty per day
+          projected_cycle_hours: parseFloat(formData.current_cycle_hours) + totalDrivingTime + (daysNeeded * 4),
           violations: [],
-          warnings: parseFloat(formData.current_cycle_hours) + 21.8 > 60 ? ['Approaching cycle limit'] : [],
+          warnings: parseFloat(formData.current_cycle_hours) + totalDrivingTime + (daysNeeded * 4) > 60 ? ['Approaching cycle limit'] : [],
           compliant: true
         }
       };
@@ -288,64 +433,7 @@ const ELDTripPlanner = () => {
 
   const renderMap = () => {
     if (!tripResult) return null;
-
-    return (
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-          <MapIcon className="mr-2" />
-          Trip Route
-        </h3>
-        <div className="bg-gradient-to-br from-blue-100 to-green-100 rounded-lg p-8 min-h-96 flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="mx-auto mb-4 w-16 h-16 text-blue-600" />
-            <h4 className="text-lg font-semibold text-gray-800 mb-2">Interactive Map View</h4>
-            <p className="text-gray-600 mb-4">Route visualization would appear here</p>
-            
-            {/* Route Summary */}
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Total Distance:</span>
-                  <span className="font-semibold">{tripResult.route.total_distance} miles</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Estimated Driving Time:</span>
-                  <span className="font-semibold">{Math.round(tripResult.route.total_driving_time * 10) / 10} hours</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Required Fuel Stops:</span>
-                  <span className="font-semibold">{tripResult.route.fuel_stops}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Required Rest Breaks:</span>
-                  <span className="font-semibold">{tripResult.route.required_rest_stops.length}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Route Legs */}
-            <div className="mt-4 space-y-2">
-              {tripResult.route.legs.map((leg, index) => (
-                <div key={index} className="bg-gray-50 p-3 rounded flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
-                      {index + 1}
-                    </div>
-                    <span className="text-sm">
-                      {leg.from} → {leg.to}
-                    </span>
-                  </div>
-                  <div className="text-right text-xs text-gray-600">
-                    <div>{Math.round(leg.distance_miles)} miles</div>
-                    <div>{Math.round(leg.duration_hours * 10) / 10}h</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <TripMap tripResult={tripResult} />;
   };
 
   return (

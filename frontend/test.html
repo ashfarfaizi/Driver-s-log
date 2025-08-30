@@ -3,20 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>React Test</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>Map Test</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        function App() {
-            return React.createElement('div', null, 'Hello, React is working!');
-        }
+    <h1>Map Test</h1>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Test map with sample coordinates
+        const map = L.map('map').setView([39.8283, -98.5795], 4);
         
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(App));
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Sample route coordinates (Chicago → New York → Seattle)
+        const coordinates = [
+            [41.8781, -87.6298], // Chicago (Start)
+            [40.7128, -74.0060], // New York (Pickup)
+            [47.6062, -122.3321]  // Seattle (Destination)
+        ];
+
+        // Add markers with START/END labels
+        const startMarker = L.marker(coordinates[0]).addTo(map)
+            .bindPopup('<strong>START</strong><br>Chicago, IL<br><small>Current Location</small>');
+        
+        const pickupMarker = L.marker(coordinates[1]).addTo(map)
+            .bindPopup('<strong>Pickup</strong><br>New York, NY<br><small>Distance: 740 miles<br>Duration: 12.3 hours</small>');
+        
+        const endMarker = L.marker(coordinates[2]).addTo(map)
+            .bindPopup('<strong>END</strong><br>Seattle, WA<br><small>Distance: 2,850 miles<br>Duration: 47.5 hours</small>');
+
+        // Add route lines with direction arrows
+        const route1 = L.polyline([coordinates[0], coordinates[1]], {color: '#3B82F6', weight: 4, dashArray: '10, 5'}).addTo(map);
+        const route2 = L.polyline([coordinates[1], coordinates[2]], {color: '#10B981', weight: 4, dashArray: '10, 5'}).addTo(map);
+
+        // Add direction arrows
+        const midPoint1 = [(coordinates[0][0] + coordinates[1][0]) / 2, (coordinates[0][1] + coordinates[1][1]) / 2];
+        const midPoint2 = [(coordinates[1][0] + coordinates[2][0]) / 2, (coordinates[1][1] + coordinates[2][1]) / 2];
+        
+        L.marker(midPoint1, {
+            icon: L.divIcon({
+                html: '<div style="background-color: #3B82F6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">→</div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            })
+        }).addTo(map);
+        
+        L.marker(midPoint2, {
+            icon: L.divIcon({
+                html: '<div style="background-color: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">→</div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            })
+        }).addTo(map);
+
+        // Fit bounds to show all markers
+        map.fitBounds(coordinates);
     </script>
 </body>
 </html>
